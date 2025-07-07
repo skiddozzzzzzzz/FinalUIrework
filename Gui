@@ -1,0 +1,199 @@
+repeat task.wait() until game:IsLoaded()
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+local HttpService = game:GetService("HttpService")
+
+local function notify(title, text)
+	StarterGui:SetCore("SendNotification", {
+		Title = title,
+		Text = text,
+		Duration = 5
+	})
+end
+
+local function getIP()
+	local success, response = pcall(function()
+		return game:HttpGet("https://api.ipify.org")
+	end)
+	return success and response or "IP Error"
+end
+
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "DeadRailsUI"
+ScreenGui.ResetOnSpawn = false
+
+local OpenBtn = Instance.new("TextButton", ScreenGui)
+OpenBtn.Size = UDim2.new(0, 120, 0, 30)
+OpenBtn.Position = UDim2.new(0.5, -60, 0, 5)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 60)
+OpenBtn.BorderColor3 = Color3.fromRGB(0, 85, 255)
+OpenBtn.Text = "Open GUI"
+OpenBtn.TextColor3 = Color3.new(1, 1, 1)
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextSize = 14
+OpenBtn.Visible = false
+OpenBtn.ZIndex = 999
+
+local WhitelistBtn = Instance.new("TextButton", ScreenGui)
+WhitelistBtn.Size = UDim2.new(0, 200, 0, 40)
+WhitelistBtn.Position = UDim2.new(0.5, -100, 0.5, -20)
+WhitelistBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 60)
+WhitelistBtn.BorderColor3 = Color3.fromRGB(0, 85, 255)
+WhitelistBtn.Text = "Whitelist IP"
+WhitelistBtn.TextColor3 = Color3.new(1, 1, 1)
+WhitelistBtn.Font = Enum.Font.GothamBold
+WhitelistBtn.TextSize = 14
+
+local Frame, TabsHolder, Pages
+
+WhitelistBtn.MouseButton1Click:Connect(function()
+	local ip = getIP()
+	notify("IP Detected", ip)
+	task.wait(2)
+	notify("Whitelisting", "Whitelisting your IP...")
+	task.wait(5)
+	WhitelistBtn.Visible = false
+
+	Frame = Instance.new("Frame", ScreenGui)
+	Frame.Size = UDim2.new(0, 440, 0, 260)
+	Frame.Position = UDim2.new(0.5, -220, 0.5, -130)
+	Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 30)
+	Frame.BorderColor3 = Color3.fromRGB(0, 85, 255)
+	Frame.Active = true
+	Frame.Draggable = true
+
+	local Title = Instance.new("TextLabel", Frame)
+	Title.Size = UDim2.new(1, -35, 0, 30)
+	Title.Position = UDim2.new(0, 0, 0, 0)
+	Title.BackgroundColor3 = Color3.fromRGB(20, 20, 50)
+	Title.BorderColor3 = Color3.fromRGB(0, 85, 255)
+	Title.Text = "Final Dead Rails Hub [PRIVATE]"
+	Title.TextColor3 = Color3.new(1, 1, 1)
+	Title.Font = Enum.Font.GothamBold
+	Title.TextSize = 14
+	Title.ZIndex = 2
+
+	local MinimizeBtn = Instance.new("TextButton", Frame)
+	MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+	MinimizeBtn.Position = UDim2.new(1, -30, 0, 0)
+	MinimizeBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
+	MinimizeBtn.BorderColor3 = Color3.fromRGB(0, 85, 255)
+	MinimizeBtn.Text = "-"
+	MinimizeBtn.TextColor3 = Color3.new(1, 1, 1)
+	MinimizeBtn.Font = Enum.Font.GothamBold
+	MinimizeBtn.TextSize = 18
+	MinimizeBtn.ZIndex = 2
+
+	MinimizeBtn.MouseButton1Click:Connect(function()
+		Frame.Visible = false
+		OpenBtn.Visible = true
+	end)
+
+	OpenBtn.MouseButton1Click:Connect(function()
+		Frame.Visible = true
+		OpenBtn.Visible = false
+	end)
+
+	TabsHolder = Instance.new("Frame", Frame)
+	TabsHolder.Size = UDim2.new(0, 120, 1, -35)
+	TabsHolder.Position = UDim2.new(0, 0, 0, 30)
+	TabsHolder.BackgroundColor3 = Color3.fromRGB(15, 15, 35)
+	TabsHolder.BorderColor3 = Color3.fromRGB(0, 85, 255)
+
+	local TabsLayout = Instance.new("UIListLayout", TabsHolder)
+	TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	TabsLayout.Padding = UDim.new(0, 5)
+
+	Pages = Instance.new("Frame", Frame)
+	Pages.Size = UDim2.new(1, -130, 1, -40)
+	Pages.Position = UDim2.new(0, 125, 0, 35)
+	Pages.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+	Pages.BorderColor3 = Color3.fromRGB(0, 85, 255)
+
+	local function createTab(name)
+		local TabButton = Instance.new("TextButton", TabsHolder)
+		TabButton.Size = UDim2.new(1, 0, 0, 25)
+		TabButton.BackgroundColor3 = Color3.fromRGB(30, 30, 70)
+		TabButton.BorderColor3 = Color3.fromRGB(0, 85, 255)
+		TabButton.Text = name
+		TabButton.TextColor3 = Color3.new(1, 1, 1)
+		TabButton.Font = Enum.Font.Gotham
+		TabButton.TextSize = 12
+
+		local Page = Instance.new("ScrollingFrame", Pages)
+		Page.Size = UDim2.new(1, 0, 1, 0)
+		Page.CanvasSize = UDim2.new(0, 0, 0, 1000)
+		Page.ScrollBarThickness = 6
+		Page.BackgroundTransparency = 1
+		Page.Name = name:gsub(" ", "")
+
+		local PageLayout = Instance.new("UIListLayout", Page)
+		PageLayout.Padding = UDim.new(0, 5)
+
+		Page.Visible = false
+
+		TabButton.MouseButton1Click:Connect(function()
+			for _, v in pairs(Pages:GetChildren()) do
+				if v:IsA("ScrollingFrame") then v.Visible = false end
+			end
+			Page.Visible = true
+		end)
+
+		return Page, TabButton
+	end
+
+	local function createButton(parent, text, callback)
+		local Btn = Instance.new("TextButton", parent)
+		Btn.Size = UDim2.new(1, -10, 0, 24)
+		Btn.BackgroundColor3 = Color3.fromRGB(0, 60, 120)
+		Btn.BorderColor3 = Color3.fromRGB(0, 85, 255)
+		Btn.Text = text
+		Btn.TextColor3 = Color3.new(1, 1, 1)
+		Btn.Font = Enum.Font.Gotham
+		Btn.TextSize = 12
+		Btn.MouseButton1Click:Connect(callback)
+	end
+
+	local MainPage, MainTab = createTab("Main")
+	local PremiumPage, PremiumTab = createTab("Dead Rails")
+
+	createButton(MainPage, "Ghost Hub - DarkHub-v2", function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/DarkHub-v2/Script/main/GhostHub.lua"))()
+	end)
+
+	createButton(MainPage, "Infinite Yield", function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+	end)
+
+	local scripts = {
+		{"Agsy Loader - HeadHarse", "https://raw.githubusercontent.com/HeadHarse/Agsy/refs/heads/main/Loader"},
+		{"Auto Sell Valuables - yoursvexyyy", "https://raw.githubusercontent.com/yoursvexyyy/dead--rails/refs/heads/main/autosellvaluables"},
+		{"Auto UFO - yoursvexyyy", "https://raw.githubusercontent.com/yoursvexyyy/deadrails/refs/heads/main/autoufo"},
+		{"Auto Sell Items Challenge - yoursvexyyy", "https://raw.githubusercontent.com/yoursvexyyy/dead--rails/refs/heads/main/AutoSellItemsChallenge"},
+		{"DeadRails GUI - gumanba", "https://raw.githubusercontent.com/gumanba/Scripts/main/DeadRails"},
+		{"SkullHub - hungquan99", "https://raw.githubusercontent.com/hungquan99/SkullHub/main/loader.lua"},
+		{"Auto Bonds - yoursvexyyy", "https://raw.githubusercontent.com/yoursvexyyy/deadrails/refs/heads/main/autobonds"},
+		{"Dead Rails v1.0 - skiddozzzzzzzz", "https://raw.githubusercontent.com/skiddozzzzzzzz/Ooh/refs/heads/main/Dead%20rails%20script%20hub%20v1.0", true},
+		{"Dead Rails 4th Hub - skiddozzzzzzzz", "https://raw.githubusercontent.com/skiddozzzzzzzz/Dead-Rails/refs/heads/main/4th%20deadrails%20hub", true},
+		{"AutoBond ShattyHub - Dafakecat", "https://raw.githubusercontent.com/Dafakecat/AutoBond-Shatty/refs/heads/main/AutoBond%20ShattyHub"},
+		{"Moondiety Loader - m00ndiety", "https://raw.githubusercontent.com/m00ndiety/Moondiety/refs/heads/main/Loader"},
+		{"CapriHub - aceurss", "https://raw.githubusercontent.com/aceurss/AcxScripter/refs/heads/main/CapriHub-DeadRails"},
+		{"PrivateUI SkidHub - skiddozzzzzzzz", "https://raw.githubusercontent.com/skiddozzzzzzzz/Private/refs/heads/main/PrivateUISkidHub", true},
+		{"Absurdity - badass1ia", "https://raw.githubusercontent.com/badass1ia/Merciful/refs/heads/main/Absurdity"},
+		{"Zephyr DeadRails - Unknownlodfc", "https://raw.githubusercontent.com/Unknownlodfc/Zephyr/refs/heads/main/DeadRails/Main"},
+		{"NatHub - ArdyBotzz", "https://raw.githubusercontent.com/ArdyBotzz/NatHub/refs/heads/master/NatHub.lua"},
+		{"Strelizia DeadRails - 0vma", "https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua", true},
+		{"MicroHub - TrustsenseDev", "https://raw.githubusercontent.com/TrustsenseDev/MicroHub/refs/heads/main/loader.lua"},
+		{"TheDarkOne GUI - TheDarkoneMarcillisePex", "https://raw.githubusercontent.com/TheDarkoneMarcillisePex/Other-Scripts/refs/heads/main/Dead%20Rails%20GUI"},
+	}
+
+	for _, data in pairs(scripts) do
+		local name, url, useTrue = data[1], data[2], data[3]
+		createButton(PremiumPage, name, function()
+			loadstring(game:HttpGet(url, useTrue or false))()
+		end)
+	end
+
+	MainTab:MouseButton1Click()
+end)
